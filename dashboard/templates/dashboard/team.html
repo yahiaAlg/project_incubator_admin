@@ -1,0 +1,173 @@
+{% extends 'dashboard/base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block title %}Team - Project Dashboard{% endblock %}
+
+{% block page_title %}Team Members{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Project Team</h5>
+        {% if is_leader %}
+        <a href="{% url "register" %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Add Member
+        </a>
+        {% endif %}
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for member in team_members %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if member.photo %}
+                                <img src="{{ member.photo.url }}" alt="{{ member.user.get_full_name }}" class="rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
+                                {% else %}
+                                <img src="{% static 'images/default-profile.png' %}" alt="{{ member.user.get_full_name }}" class="rounded-circle me-2" width="40" height="40">
+                                {% endif %}
+                                <div>
+                                    {{ member.user.get_full_name }}
+                                    {% if member.is_project_leader %}
+                                    <div class="badge bg-primary">Leader</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ member.get_role_display }}</td>
+                        <td>{{ member.user.email }}</td>
+                        <td>{{ member.phone }}</td>
+                        <td>
+                            {% if is_leader and not member.is_project_leader %}
+                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editMemberModal" 
+                                    data-id="{{ member.id }}" 
+                                    data-role="{{ member.role }}" 
+                                    data-phone="{{ member.phone }}"
+                                    onclick="prepareEditForm(this)">
+                                <i class="bi bi-pencil"></i> Edit
+                            </button>
+                            <a href="{% url 'remove_team_member' member.id %}" class="btn btn-sm btn-outline-danger d-none" onclick="return confirm('Are you sure you want to remove this member from the team?')">
+                                <i class="bi bi-person-x"></i> Remove
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">No team members found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% if is_leader %}
+<!-- Add Member Modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMemberModalLabel">Add Team Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{% url 'add_team_member' %}" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">Enter the email of an existing user to add them to the team.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="member">Member</option>
+                            <option value="supervisor">Supervisor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="{% url "register" %}" class="btn btn-primary">Add Member</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMemberModalLabel">Edit Team Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMemberForm" method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="edit_role" class="form-label">Role</label>
+                        <select class="form-select" id="edit_role" name="role" required>
+                            <option value="member">Member</option>
+                            <option value="supervisor">Supervisor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_phone" class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="edit_phone" name="phone" required>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if is_leader %}
+<script>
+    function prepareEditForm(button) {
+        const id = button.getAttribute('data-id');
+        const role = button.getAttribute('data-role');
+        const phone = button.getAttribute('data-phone');
+        
+        // Set form action URL
+        document.getElementById('editMemberForm').action = "{% url 'edit_team_member' 0 %}".replace('0', id);
+        
+        // Set form values
+        document.getElementById('edit_role').value = role;
+        document.getElementById('edit_phone').value = phone;
+    }
+</script>
+{% endif %}
+{% endblock %}

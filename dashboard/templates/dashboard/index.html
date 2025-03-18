@@ -1,0 +1,58 @@
+<!-- templates/dashboard/index.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Project Dashboard{% endblock %}
+
+{% block page_title %}Welcome to Project Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-body">
+                <p class="card-text">Select a section from the navigation menu to manage your project.</p>
+                
+                {% if project %}
+                <h5 class="mt-4">Current Project: {{ project.name }}</h5>
+                <div class="progress mb-3">
+                    <div class="progress-bar" role="progressbar" style="width: {{ project.progress }}%;" 
+                         aria-valuenow="{{ project.progress }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ project.progress }}%
+                    </div>
+                </div>
+                <p><strong>Status:</strong> {{ project.get_status_display }}</p>
+                <p><strong>Deadline:</strong> {{ project.deadline }}</p>
+                {% else %}
+                <div class="alert alert-info mt-4">
+                    <p>You're not assigned to any project yet. Please contact your administrator.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if recent_materials %}
+        <div class="card">
+            <div class="card-header">
+                Recent Material Requests
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for request in recent_materials %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ request.material.name }}
+                        <span class="badge bg-primary rounded-pill">{{ request.acquired_date }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% comment %} a button for continuing to the project Informations{% endcomment %}
+<a href="{% url 'profile' %}" class="btn btn-success ms-auto d-block w-50 mt-4" >
+    Continue with Profile Information 
+    <i class="bi bi-arrow-right"></i>
+</a>
+{% endblock %}

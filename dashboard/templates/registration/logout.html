@@ -1,0 +1,25 @@
+{% extends 'registration/base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block title %}Logout{% endblock %} 
+{% block extra_css %}
+
+  <link rel="stylesheet" href="{% static "css/login.css" %}"/>
+{% endblock extra_css %} 
+{% block content %}
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="bi bi-person-workspace"></i>
+      </div>
+      <h4 class="text-success">Logged out successfully </h4>
+      {% comment %} link back to the login page {% endcomment %}
+      <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %} 
+

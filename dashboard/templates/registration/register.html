@@ -1,0 +1,46 @@
+{% extends 'registration/base.html' %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block title %}Register{% endblock %} 
+{% block extra_css %}
+      <link rel="stylesheet" href="{% static "dashboard/css/login.css" %}"/>
+{% endblock extra_css %}
+{% block sidebar %}
+  
+{% endblock sidebar %}
+{% block content %}
+
+<div class="login-page">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">
+        <i class="bi bi-person-workspace"></i>
+      </div>
+        <h2 class="text-center mb-4">New User Registration</h2>
+
+        <p class="text-center mb-4">Create an account to join projects</p>
+
+    </div>
+    <div class="login-form">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <h4 class="mb-3">Account Information</h4>
+            {% bootstrap_form user_form %}
+            
+            <h4 class="mb-3">Profile Information</h4>
+            {% bootstrap_form team_member_form %}
+            
+            <div class="d-flex justify-content-between mt-4">
+                {% bootstrap_button content="Register" button_type="submit" button_class="btn-primary" %}
+                {% bootstrap_button content="Reset" button_type="reset" button_class="btn-secondary" %}
+            </div>
+            
+
+        </form>
+    </div>
+  </div>
+</div>
+{% endblock %} 
+{% block extra_js %}
+{% endblock extra_js %}

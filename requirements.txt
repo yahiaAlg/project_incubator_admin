@@ -1,0 +1,6 @@
+django
+django_bootstrap5
+pillow
+pandas 
+openpyxl
+whitenoise[brotli]

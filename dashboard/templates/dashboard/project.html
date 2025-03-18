@@ -1,0 +1,219 @@
+<!-- templates/dashboard/project.html -->
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Project - Project Dashboard{% endblock %}
+
+{% block page_title %}Project Details{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" rel="stylesheet" type="text/css" />
+<style>
+    .dropzone {
+        border: 2px dashed #0087F7;
+        border-radius: 5px;
+        background: white;
+        min-height: 150px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .progress {
+        height: 25px;
+    }
+    .project-logo {
+        max-width: 200px;
+        max-height: 200px;
+        margin-bottom: 20px;
+    }
+    .project-image-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    .project-image {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+    .project-file {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+    }
+    .project-file i {
+        margin-right: 10px;
+        font-size: 24px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <form id="project-form" enctype="multipart/form-data" method="post" action="{% url "save_project_info" %}">
+            {% csrf_token %}
+            <input type="hidden" name="project_id" value="{{ project.id|default:'' }}">
+            
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="project-name" class="form-label">Project Name</label>
+                        <input type="text" class="form-control" id="project-name" name="name" 
+                               value="{{ project.name|default:'' }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="project-progress" class="form-label">Progress: <span id="progress-value">{{ project.progress|default:'0' }}</span>%</label>
+                        <input type="range" class="form-range" id="project-progress" 
+                              min="0" max="100" step="1" 
+                              value="{{ project.progress|default:'0' }}"
+                              name="project_progress"
+                              oninput="document.getElementById('progress-value').textContent = this.value">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="project-description" class="form-label">Description</label>
+                        <textarea class="form-control" id="project-description" name="description" 
+                                  rows="4" required>{{ project.description|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="project-start-date" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="project-start-date" 
+                                       name="start_date" value="{{ project.start_date|date:'Y-m-d'|default:'' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="project-deadline" class="form-label">Deadline</label>
+                                <input type="date" class="form-control" id="project-deadline" 
+                                       name="deadline" value="{{ project.deadline|date:'Y-m-d'|default:'' }}" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Project Logo</div>
+                <div class="card-body">
+                    {% if project.logo %}
+                    <img src="{{ project.logo.url }}" alt="Project Logo" class="project-logo">
+                    {% endif %}
+                    <input type="file" class="form-control" id="project-logo" name="logo" accept="image/*">
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Project Images</div>
+                <div class="card-body">
+                    <div class="project-image-container">
+                        {% for image in project_images %}
+                        <img src="{{ image.image.url }}" alt="Project Image" class="project-image">
+                        {% endfor %}
+                    </div>
+                    <div id="image-dropzone" class="dropzone mt-3">
+                        <div class="dz-message">Drag & drop images here or click to upload</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">Upload Files (PDF/PPT)</div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        {% for file in project_files %}
+                        <div class="project-file">
+                            <i class="fas fa-file-pdf"></i>
+                            <a href="{{ file.file.url }}" target="_blank">{{ file.file.name }}</a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div id="file-dropzone" class="dropzone">
+                        <div class="dz-message">Drag & drop PDF or PPT files here or click to upload</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" id="save-project">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+{% comment %} <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> {% endcomment %}
+<script>
+    // Disable Dropzone auto discover
+    Dropzone.autoDiscover = false;
+    
+    $(document).ready(function() {
+        // Initialize image dropzone
+        var imageDropzone = new Dropzone("#image-dropzone", {
+            url: "#",
+            autoProcessQueue: false,
+            uploadMultiple: true,
+            parallelUploads: 5,
+            maxFiles: 5,
+            acceptedFiles: "image/*",
+            addRemoveLinks: true,
+        });
+        
+        // Initialize file dropzone
+        var fileDropzone = new Dropzone("#file-dropzone", {
+            url: "#",
+            autoProcessQueue: false,
+            uploadMultiple: true,
+            parallelUploads: 5,
+            maxFiles: 5,
+            acceptedFiles: ".pdf,.ppt,.pptx",
+            addRemoveLinks: true,
+        });
+        
+        // Handle form submission
+        $("#project-form").on("submit", function(e) {
+            e.preventDefault();
+            
+            var formData = new FormData(this);
+            
+            // Add images from dropzone
+            imageDropzone.files.forEach(function(file) {
+                formData.append('images', file);
+            });
+            
+            // Add files from dropzone
+            fileDropzone.files.forEach(function(file) {
+                formData.append('files', file);
+            });
+            
+            $.ajax({
+                url: "{% url 'save_project_info' %}",
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    if (response.status === "success") {
+                        alert("Project saved successfully!");
+                        // Redirect or refresh as needed
+                        location.reload();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert("Error saving project: " + error);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

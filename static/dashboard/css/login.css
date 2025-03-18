@@ -1,0 +1,72 @@
+
+  .login-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0061f2 0%, #6900f2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .login-header {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .login-logo {
+    width: 80px;
+    height: 80px;
+    background: #0061f2;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .login-logo i {
+    font-size: 2.5rem;
+    color: white;
+  }
+
+  .login-form {
+    padding: 2rem;
+  }
+
+  .form-floating {
+    margin-bottom: 1rem;
+  }
+
+  .forgot-password {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-decoration: none;
+  }
+
+  .forgot-password:hover {
+    color: #0061f2;
+  }
+
+  .login-btn {
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+
+  .alert-floating {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: none;
+  }

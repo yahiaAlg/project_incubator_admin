@@ -1,0 +1,235 @@
+<!-- templates/dashboard/materials.html -->
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Materials - Project Dashboard{% endblock %}
+
+{% block page_title %}Materials Management{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Available Materials -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Available Materials</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Description</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for material in available_materials %}
+                            <tr>
+                                <td>{{ material.name }}</td>
+                                <td>{{ material.description }}</td>
+                                <td>
+                                    {% if can_request %}
+                                    <button class="btn btn-sm btn-primary request-material" 
+                                            data-id="{{ material.id }}"
+                                            data-name="{{ material.name }}"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#requestMaterialModal">
+                                        Request Material
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No available materials</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- My Materials -->
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">My Materials</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Material</th>
+                                <th>Acquired Date</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in my_materials %}
+                            <tr>
+                                <td>{{ request.material.name }}</td>
+                                <td>{{ request.acquired_date|date:"Y-m-d" }}</td>
+                                <td>{{ request.from_date|date:"Y-m-d" }}</td>
+                                <td>{{ request.to_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    <span class="badge bg-primary">Active</span>
+                                </td>
+                                <td>
+                                    {% if can_request %}
+                                    <button class="btn btn-sm btn-warning return-material" 
+                                            data-id="{{ request.id }}"
+                                            data-name="{{ request.material.name }}">
+                                        Return
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">No materials requested</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Material Modal -->
+{% if can_request %}
+<div class="modal fade" id="requestMaterialModal" tabindex="-1" aria-labelledby="requestMaterialModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="requestMaterialModalLabel">Request Material</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="request-material-form">
+                {% csrf_token %}
+                <input type="hidden" id="material-id" name="material_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Material Name</label>
+                        <div id="material-name" class="form-control-plaintext"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity" class="form-label">Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="from-date" class="form-label">From Date</label>
+                        <input type="date" class="form-control" id="from-date" name="from_date" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="to-date" class="form-label">To Date</label>
+                        <input type="date" class="form-control" id="to-date" name="to_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Set today's date as the default from date
+        var today = new Date();
+        var dd = String(today.getDate()).padStart(2, '0');
+        var mm = String(today.getMonth() + 1).padStart(2, '0');
+        var yyyy = today.getFullYear();
+        today = yyyy + '-' + mm + '-' + dd;
+        
+        // Set one week from now as the default to date
+        var nextWeek = new Date();
+        nextWeek.setDate(nextWeek.getDate() + 7);
+        var ndd = String(nextWeek.getDate()).padStart(2, '0');
+        var nmm = String(nextWeek.getMonth() + 1).padStart(2, '0');
+        var nyyyy = nextWeek.getFullYear();
+        nextWeek = nyyyy + '-' + nmm + '-' + ndd;
+        
+        $("#from-date").val(today);
+        $("#to-date").val(nextWeek);
+        
+        // Request material button click
+        $(".request-material").on("click", function() {
+            var materialId = $(this).data("id");
+            var materialName = $(this).data("name");
+            
+            $("#material-id").val(materialId);
+            $("#material-name").text(materialName);
+        });
+        
+        // Request material form submit
+        $("#request-material-form").on("submit", function(e) {
+            e.preventDefault();
+            
+            var fromDate = new Date($("#from-date").val());
+            var toDate = new Date($("#to-date").val());
+            
+            if (fromDate > toDate) {
+                alert("From date cannot be after to date");
+                return;
+            }
+            
+            $.ajax({
+                url: "{% url 'request_material' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.status === "success") {
+                        alert(response.message);
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                },
+                error: function(xhr) {
+                    alert("Error: " + xhr.responseJSON.message);
+                }
+            });
+        });
+        
+        // Return material button click
+        $(".return-material").on("click", function() {
+            if (confirm("Are you sure you want to return " + $(this).data("name") + "?")) {
+                var requestId = $(this).data("id");
+                
+                $.ajax({
+                    url: "{% url 'return_material' request_id=0 %}".replace('0', requestId),
+                    type: "POST",
+                    data: {
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.status === "success") {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);    
+                        }
+                    },
+                    error: function(xhr) {
+                        alert("Error: " + xhr.responseJSON.message);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
