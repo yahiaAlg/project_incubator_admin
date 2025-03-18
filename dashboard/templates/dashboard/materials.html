@@ -68,7 +68,7 @@
                                 <th>From</th>
                                 <th>To</th>
                                 <th>Status</th>
-                                <th>Actions</th>
+                                {% comment %} <th>Actions</th> {% endcomment %}
                             </tr>
                         </thead>
                         <tbody>
@@ -81,7 +81,7 @@
                                 <td>
                                     <span class="badge bg-primary">Active</span>
                                 </td>
-                                <td>
+                                {% comment %} <td>
                                     {% if can_request %}
                                     <button class="btn btn-sm btn-warning return-material" 
                                             data-id="{{ request.id }}"
@@ -89,7 +89,7 @@
                                         Return
                                     </button>
                                     {% endif %}
-                                </td>
+                                </td> {% endcomment %}
                             </tr>
                             {% empty %}
                             <tr>
